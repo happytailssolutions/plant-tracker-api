@@ -19,14 +19,25 @@ export class ProjectsService {
   ) {}
 
   async findMyProjects(userId: string): Promise<Project[]> {
-    // Find all projects where the user is either owner or member
-    const projectUsers = await this.projectUsersRepository.find({
-      where: { userId, isActive: true },
-      relations: ['project', 'project.owner'],
-    });
+    console.log(`[ProjectsService] findMyProjects called for userId: ${userId}`);
+    try {
+      // Find all projects where the user is either owner or member
+      const projectUsers = await this.projectUsersRepository.find({
+        where: { userId, isActive: true },
+        relations: ['project', 'project.owner'],
+      });
+      console.log(`[ProjectsService] Found ${projectUsers.length} projectUser entries from the database.`);
+      // Using JSON.stringify to get a detailed view of the nested objects
+      console.log('[ProjectsService] Raw projectUser entries:', JSON.stringify(projectUsers, null, 2));
 
-    // Filter out any null projects and return the result
-    return projectUsers.map(pu => pu.project).filter(Boolean) as Project[];
+      // Filter out any null projects and return the result
+      const projects = projectUsers.map(pu => pu.project).filter(Boolean) as Project[];
+      console.log(`[ProjectsService] Returning ${projects.length} valid, non-null projects.`);
+      return projects;
+    } catch (error) {
+      console.error(`[ProjectsService] An error occurred in findMyProjects for userId: ${userId}`, error);
+      throw error; // Re-throw the error so it's still surfaced to the user
+    }
   }
 
   async findProjectById(projectId: string, userId: string): Promise<Project> {
