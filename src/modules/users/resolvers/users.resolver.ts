@@ -12,7 +12,8 @@ export class UsersResolver {
   @Query(() => User)
   @UseGuards(GqlAuthGuard)
   async me(@CurrentUser() user: any): Promise<User> {
-    // Find or create user in our database
-    return this.usersService.findOrCreateUser(user.email, user.name);
+    // The user should already be created by the JwtStrategy, so we can just return it.
+    // If not, we can find it by its ID.
+    return this.usersService.findById(user.id);
   }
 } 
