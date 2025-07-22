@@ -1,0 +1,152 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreatePinInput {
+  description: String
+  isPublic: Boolean
+  latitude: Float!
+  longitude: Float!
+  metadata: JSON
+  name: String!
+  pinType: String
+  projectId: String!
+  status: String
+}
+
+input CreateProjectInput {
+  area: Float
+  areaUnit: String
+  description: String
+  endDate: String
+  isPublic: Boolean
+  latitude: Float
+  location: String
+  longitude: Float
+  memberIds: [String!]
+  metadata: JSON
+  name: String!
+  projectType: String
+  startDate: String
+  status: String
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+input MapBoundsInput {
+  east: Float!
+  north: Float!
+  projectId: String
+  south: Float!
+  west: Float!
+}
+
+type Mutation {
+  addProjectMember(memberId: ID!, projectId: ID!): Project!
+  createPin(input: CreatePinInput!): Pin!
+  createProject(input: CreateProjectInput!): Project!
+  deletePin(id: ID!): Boolean!
+  deleteProject(id: ID!): Boolean!
+  removeProjectMember(memberId: ID!, projectId: ID!): Project!
+  updatePin(input: UpdatePinInput!): Pin!
+  updateProject(input: UpdateProjectInput!): Project!
+}
+
+type Pin {
+  createdAt: DateTime!
+  createdBy: User!
+  createdById: String!
+  description: String
+  id: ID!
+  isActive: Boolean!
+  isPublic: Boolean!
+  latitude: Float!
+  location: String!
+  longitude: Float!
+  metadata: JSON
+  name: String!
+  pinType: String!
+  project: Project!
+  projectId: String!
+  status: String!
+  updatedAt: DateTime!
+}
+
+type Project {
+  area: Float!
+  areaUnit: String!
+  createdAt: DateTime!
+  description: String
+  endDate: DateTime!
+  id: ID!
+  isActive: Boolean!
+  isPublic: Boolean!
+  latitude: Float!
+  location: String!
+  longitude: Float!
+  members: [User!]!
+  metadata: JSON
+  name: String!
+  owner: User!
+  ownerId: String!
+  projectType: String!
+  startDate: DateTime!
+  status: String!
+  updatedAt: DateTime!
+}
+
+type Query {
+  me: User!
+  myProjects: [Project!]!
+  pin(id: ID!): Pin!
+  pinsByProject(projectId: ID!): [Pin!]!
+  pinsInBounds(mapBounds: MapBoundsInput!): [Pin!]!
+  project(id: ID!): Project!
+}
+
+input UpdatePinInput {
+  description: String
+  id: String!
+  isPublic: Boolean
+  latitude: Float
+  longitude: Float
+  metadata: JSON
+  name: String
+  pinType: String
+  projectId: String
+  status: String
+}
+
+input UpdateProjectInput {
+  area: Float
+  areaUnit: String
+  description: String
+  endDate: String
+  id: String!
+  isPublic: Boolean
+  latitude: Float
+  location: String
+  longitude: Float
+  memberIds: [String!]
+  metadata: JSON
+  name: String
+  projectType: String
+  startDate: String
+  status: String
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  name: String!
+  updatedAt: DateTime!
+}
