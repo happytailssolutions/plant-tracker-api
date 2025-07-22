@@ -18,39 +18,39 @@ export class Project {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
   location: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
   latitude: number;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'decimal', precision: 11, scale: 8, nullable: true })
   longitude: number;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   area: number;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'varchar', length: 50, nullable: true })
   areaUnit: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'varchar', length: 100, nullable: true })
   projectType: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'varchar', length: 50, nullable: true })
   status: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'date', nullable: true })
   startDate: Date;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'date', nullable: true })
   endDate: Date;
 
@@ -80,7 +80,7 @@ export class Project {
   @JoinColumn({ name: 'ownerId' })
   owner: User;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'uuid' })
   ownerId: string;
 
