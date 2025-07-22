@@ -81,25 +81,25 @@ type Pin {
 }
 
 type Project {
-  area: Float!
-  areaUnit: String!
+  area: Float
+  areaUnit: String
   createdAt: DateTime!
   description: String
-  endDate: DateTime!
+  endDate: DateTime
   id: ID!
   isActive: Boolean!
   isPublic: Boolean!
-  latitude: Float!
-  location: String!
-  longitude: Float!
+  latitude: Float
+  location: String
+  longitude: Float
   members: [User!]!
   metadata: JSON
   name: String!
   owner: User!
-  ownerId: String!
-  projectType: String!
-  startDate: DateTime!
-  status: String!
+  ownerId: String
+  projectType: String
+  startDate: DateTime
+  status: String
   updatedAt: DateTime!
 }
 
