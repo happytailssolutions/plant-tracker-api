@@ -14,13 +14,13 @@ export class ProjectsResolver {
   @Query(() => [Project])
   @UseGuards(GqlAuthGuard)
   async myProjects(@CurrentUser() user: any): Promise<Project[]> {
-    return this.projectsService.findMyProjects(user.sub);
+    return this.projectsService.findMyProjects(user.id);
   }
 
   @Query(() => Project)
   @UseGuards(GqlAuthGuard)
   async project(@Args('id', { type: () => ID }) id: string, @CurrentUser() user: any): Promise<Project> {
-    return this.projectsService.findProjectById(id, user.sub);
+    return this.projectsService.findProjectById(id, user.id);
   }
 
   @Mutation(() => Project)
@@ -30,7 +30,7 @@ export class ProjectsResolver {
     @CurrentUser() user: any,
   ): Promise<Project> {
     console.log('CreateProject Resolver - CurrentUser:', user);
-    return this.projectsService.createProject(createProjectInput, user.sub);
+    return this.projectsService.createProject(createProjectInput, user.id);
   }
 
   @Mutation(() => Project)
@@ -39,7 +39,7 @@ export class ProjectsResolver {
     @Args('input') updateProjectInput: UpdateProjectInput,
     @CurrentUser() user: any,
   ): Promise<Project> {
-    return this.projectsService.updateProject(updateProjectInput, user.sub);
+    return this.projectsService.updateProject(updateProjectInput, user.id);
   }
 
   @Mutation(() => Boolean)
@@ -48,7 +48,7 @@ export class ProjectsResolver {
     @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: any,
   ): Promise<boolean> {
-    return this.projectsService.deleteProject(id, user.sub);
+    return this.projectsService.deleteProject(id, user.id);
   }
 
   @Mutation(() => Project)
@@ -58,7 +58,7 @@ export class ProjectsResolver {
     @Args('memberId', { type: () => ID }) memberId: string,
     @CurrentUser() user: any,
   ): Promise<Project> {
-    return this.projectsService.addProjectMember(projectId, memberId, user.sub);
+    return this.projectsService.addProjectMember(projectId, memberId, user.id);
   }
 
   @Mutation(() => Project)
@@ -68,6 +68,6 @@ export class ProjectsResolver {
     @Args('memberId', { type: () => ID }) memberId: string,
     @CurrentUser() user: any,
   ): Promise<Project> {
-    return this.projectsService.removeProjectMember(projectId, memberId, user.sub);
+    return this.projectsService.removeProjectMember(projectId, memberId, user.id);
   }
 } 
