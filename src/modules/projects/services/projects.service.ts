@@ -43,6 +43,7 @@ export class ProjectsService {
   }
 
   async createProject(createProjectInput: CreateProjectInput, userId: string): Promise<Project> {
+    console.log('ProjectsService.createProject - userId:', userId);
     // Create the project
     const project = new Project();
     Object.assign(project, {
@@ -51,6 +52,7 @@ export class ProjectsService {
       startDate: createProjectInput.startDate ? new Date(createProjectInput.startDate) : null,
       endDate: createProjectInput.endDate ? new Date(createProjectInput.endDate) : null,
     });
+    console.log('ProjectsService.createProject - project to save:', project);
 
     const savedProject = await this.projectsRepository.save(project);
 

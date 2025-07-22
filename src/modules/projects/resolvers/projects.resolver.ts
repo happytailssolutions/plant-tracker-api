@@ -29,6 +29,7 @@ export class ProjectsResolver {
     @Args('input') createProjectInput: CreateProjectInput,
     @CurrentUser() user: any,
   ): Promise<Project> {
+    console.log('CreateProject Resolver - CurrentUser:', user);
     return this.projectsService.createProject(createProjectInput, user.sub);
   }
 
