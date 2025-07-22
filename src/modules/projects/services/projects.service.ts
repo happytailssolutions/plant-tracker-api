@@ -84,7 +84,7 @@ export class ProjectsService {
     // Return the project with relations
     const result = await this.projectsRepository.findOne({
       where: { id: savedProject.id },
-      relations: ['owner'],
+      relations: ['owner', 'members'],
     });
     
     if (!result) {
