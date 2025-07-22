@@ -14,7 +14,12 @@ export class ProjectsResolver {
   @Query(() => [Project])
   @UseGuards(GqlAuthGuard)
   async myProjects(@CurrentUser() user: any): Promise<Project[]> {
-    return this.projectsService.findMyProjects(user.id);
+    try {
+      return await this.projectsService.findMyProjects(user.id);
+    } catch (error) {
+      console.error('Error in myProjects resolver:', error);
+      throw error;
+    }
   }
 
   @Query(() => Project)

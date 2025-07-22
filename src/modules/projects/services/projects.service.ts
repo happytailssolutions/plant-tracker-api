@@ -25,7 +25,8 @@ export class ProjectsService {
       relations: ['project', 'project.owner'],
     });
 
-    return projectUsers.map(pu => pu.project);
+    // Filter out any null projects and return the result
+    return projectUsers.map(pu => pu.project).filter(Boolean) as Project[];
   }
 
   async findProjectById(projectId: string, userId: string): Promise<Project> {
