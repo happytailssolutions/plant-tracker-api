@@ -18,21 +18,20 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
-  async createUser(email: string, name: string): Promise<User> {
+  async createUser(id: string, email: string, name: string): Promise<User> {
     const user = this.usersRepository.create({
+      id,
       email,
       name,
     });
     return this.usersRepository.save(user);
   }
 
-  async findOrCreateUser(email: string, name: string): Promise<User> {
-    let user = await this.findByEmail(email);
-    
+  async findOrCreate(id: string, email: string, name: string): Promise<User> {
+    let user = await this.findById(id);
     if (!user) {
-      user = await this.createUser(email, name);
+      user = await this.createUser(id, email, name);
     }
-    
     return user;
   }
 } 

@@ -2,10 +2,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { UsersService } from 'src/modules/users/services/users.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private usersService: UsersService,
+    ) {
     const secret = configService.get<string>('SUPABASE_JWT_SECRET');
     if (!secret) {
       throw new Error('SUPABASE_JWT_SECRET is not defined in environment variables');
@@ -19,16 +23,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // Validate the JWT payload
     if (!payload.sub) {
       throw new UnauthorizedException('Invalid token payload');
     }
 
-    // Return the user data from the JWT payload
-    return {
-      id: payload.sub,
-      email: payload.email,
-      name: payload.user_metadata?.name || payload.email,
-    };
+    const user = await this.usersService.findOrCreate(
+      payload.sub,
+      payload.email,
+      payload.user_metadata?.name || payload.email,
+    );
+
+    return user;
   }
 } 
