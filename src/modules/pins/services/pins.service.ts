@@ -109,6 +109,15 @@ export class PinsService {
   }
 
   async createPin(createPinInput: CreatePinInput, userId: string): Promise<Pin> {
+    // Validate coordinates
+    if (typeof createPinInput.latitude !== 'number' || typeof createPinInput.longitude !== 'number') {
+      throw new Error('Invalid coordinates: latitude and longitude must be numbers');
+    }
+
+    if (createPinInput.latitude === 0 && createPinInput.longitude === 0) {
+      throw new Error('Invalid coordinates: cannot create pin at coordinates (0, 0)');
+    }
+
     // Check if user has access to the project
     const projectAccess = await this.projectUsersRepository.findOne({
       where: { projectId: createPinInput.projectId, userId, isActive: true },
@@ -123,7 +132,7 @@ export class PinsService {
     Object.assign(pin, {
       ...createPinInput,
       createdById: userId,
-      location: `POINT(${createPinInput.longitude} ${createPinInput.latitude})`,
+      location: `SRID=4326;POINT(${createPinInput.longitude} ${createPinInput.latitude})`,
     });
 
     const savedPin = await this.pinsRepository.save(pin);
@@ -168,7 +177,7 @@ export class PinsService {
 
     // Update location if coordinates changed
     if (updateData.latitude && updateData.longitude) {
-      updatePayload.location = `POINT(${updateData.longitude} ${updateData.latitude})`;
+      updatePayload.location = `SRID=4326;POINT(${updateData.longitude} ${updateData.latitude})`;
     }
 
     // Update the pin
