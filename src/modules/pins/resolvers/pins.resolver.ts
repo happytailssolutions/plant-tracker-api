@@ -16,7 +16,7 @@ export class PinsResolver {
     @Args('mapBounds') mapBounds: MapBoundsInput,
     @CurrentUser() user: any,
   ): Promise<Pin[]> {
-    return this.pinsService.findPinsInBounds(mapBounds, user.sub);
+    return this.pinsService.findPinsInBounds(mapBounds, user.id);
   }
 
   @Query(() => Pin)
@@ -25,7 +25,7 @@ export class PinsResolver {
     @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: any,
   ): Promise<Pin> {
-    return this.pinsService.findPinById(id, user.sub);
+    return this.pinsService.findPinById(id, user.id);
   }
 
   @Query(() => [Pin])
@@ -34,7 +34,7 @@ export class PinsResolver {
     @Args('projectId', { type: () => ID }) projectId: string,
     @CurrentUser() user: any,
   ): Promise<Pin[]> {
-    return this.pinsService.findPinsByProject(projectId, user.sub);
+    return this.pinsService.findPinsByProject(projectId, user.id);
   }
 
   @Mutation(() => Pin)
@@ -43,7 +43,7 @@ export class PinsResolver {
     @Args('input') createPinInput: CreatePinInput,
     @CurrentUser() user: any,
   ): Promise<Pin> {
-    return this.pinsService.createPin(createPinInput, user.sub);
+    return this.pinsService.createPin(createPinInput, user.id);
   }
 
   @Mutation(() => Pin)
@@ -52,7 +52,7 @@ export class PinsResolver {
     @Args('input') updatePinInput: UpdatePinInput,
     @CurrentUser() user: any,
   ): Promise<Pin> {
-    return this.pinsService.updatePin(updatePinInput, user.sub);
+    return this.pinsService.updatePin(updatePinInput, user.id);
   }
 
   @Mutation(() => Boolean)
@@ -61,6 +61,6 @@ export class PinsResolver {
     @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: any,
   ): Promise<boolean> {
-    return this.pinsService.deletePin(id, user.sub);
+    return this.pinsService.deletePin(id, user.id);
   }
 } 
