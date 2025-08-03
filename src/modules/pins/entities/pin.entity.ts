@@ -19,9 +19,9 @@ export class Pin {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Field()
+  @Field(() => GraphQLJSON)
   @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326 })
-  location: string;
+  location: object;
 
   @Field()
   @Column({ type: 'decimal', precision: 10, scale: 8 })
