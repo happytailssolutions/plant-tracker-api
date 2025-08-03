@@ -127,27 +127,45 @@ export class PinsService {
       throw new ForbiddenException('Access denied to this project');
     }
 
-    // Create the pin with PostGIS point
-    const pin = new Pin();
-    Object.assign(pin, {
-      ...createPinInput,
-      createdById: userId,
-      location: `SRID=4326;POINT(${createPinInput.longitude} ${createPinInput.latitude})`,
-    });
+    // Create the pin using raw SQL to properly handle PostGIS geography
+    const result = await this.pinsRepository.query(`
+      INSERT INTO pins (
+        name, description, location, latitude, longitude, 
+        "pinType", status, metadata, "isPublic", "isActive", 
+        "projectId", "createdById", "createdAt", "updatedAt"
+      ) VALUES (
+        $1, $2, ST_GeogFromText($3), $4, $5, 
+        $6, $7, $8, $9, $10, 
+        $11, $12, NOW(), NOW()
+      ) RETURNING id
+    `, [
+      createPinInput.name,
+      createPinInput.description || null,
+      `POINT(${createPinInput.longitude} ${createPinInput.latitude})`,
+      createPinInput.latitude,
+      createPinInput.longitude,
+      createPinInput.pinType || 'plant',
+      createPinInput.status || 'active',
+      createPinInput.metadata ? JSON.stringify(createPinInput.metadata) : null,
+      createPinInput.isPublic || false,
+      true, // isActive
+      createPinInput.projectId,
+      userId
+    ]);
 
-    const savedPin = await this.pinsRepository.save(pin);
+    const pinId = result[0].id;
 
     // Return the pin with relations
-    const result = await this.pinsRepository.findOne({
-      where: { id: savedPin.id },
+    const savedPin = await this.pinsRepository.findOne({
+      where: { id: pinId },
       relations: ['project', 'createdBy'],
     });
 
-    if (!result) {
+    if (!savedPin) {
       throw new NotFoundException('Failed to create pin');
     }
 
-    return result;
+    return savedPin;
   }
 
   async updatePin(updatePinInput: UpdatePinInput, userId: string): Promise<Pin> {
@@ -177,11 +195,24 @@ export class PinsService {
 
     // Update location if coordinates changed
     if (updateData.latitude && updateData.longitude) {
-      updatePayload.location = `SRID=4326;POINT(${updateData.longitude} ${updateData.latitude})`;
+      // Use raw SQL to update the PostGIS geography column
+      await this.pinsRepository.query(`
+        UPDATE pins 
+        SET location = ST_GeogFromText($1), 
+            latitude = $2, 
+            longitude = $3,
+            "updatedAt" = NOW()
+        WHERE id = $4
+      `, [
+        `POINT(${updateData.longitude} ${updateData.latitude})`,
+        updateData.latitude,
+        updateData.longitude,
+        id
+      ]);
+    } else {
+      // Update other fields without location
+      await this.pinsRepository.update(id, updatePayload);
     }
-
-    // Update the pin
-    await this.pinsRepository.update(id, updatePayload);
 
     // Return the updated pin
     const result = await this.pinsRepository.findOne({
