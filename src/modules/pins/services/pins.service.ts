@@ -69,6 +69,37 @@ export class PinsService {
     return queryBuilder.getMany();
   }
 
+  async findAllPins(userId: string): Promise<Pin[]> {
+    // Get all projects user has access to
+    const userProjects = await this.projectUsersRepository.find({
+      where: { userId, isActive: true },
+      select: ['projectId'],
+    });
+
+    const projectIds = userProjects.map(pu => pu.projectId);
+
+    // Build query to get pins from user's projects and public pins
+    const queryBuilder = this.pinsRepository
+      .createQueryBuilder('pin')
+      .leftJoinAndSelect('pin.project', 'project')
+      .leftJoinAndSelect('pin.createdBy', 'createdBy')
+      .where('pin.isActive = :isActive', { isActive: true });
+
+    if (projectIds.length > 0) {
+      queryBuilder.andWhere('(pin.projectId IN (:...projectIds) OR pin.isPublic = :isPublic)', {
+        projectIds,
+        isPublic: true,
+      });
+    } else {
+      // If user has no projects, only show public pins
+      queryBuilder.andWhere('pin.isPublic = :isPublic', { isPublic: true });
+    }
+
+    return queryBuilder
+      .orderBy('pin.createdAt', 'DESC')
+      .getMany();
+  }
+
   async findPinById(pinId: string, userId: string): Promise<Pin> {
     const pin = await this.pinsRepository.findOne({
       where: { id: pinId, isActive: true },

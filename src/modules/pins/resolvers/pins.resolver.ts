@@ -12,6 +12,14 @@ export class PinsResolver {
 
   @Query(() => [Pin])
   @UseGuards(GqlAuthGuard)
+  async allPins(
+    @CurrentUser() user: any,
+  ): Promise<Pin[]> {
+    return this.pinsService.findAllPins(user.id);
+  }
+
+  @Query(() => [Pin])
+  @UseGuards(GqlAuthGuard)
   async pinsInBounds(
     @Args('mapBounds') mapBounds: MapBoundsInput,
     @CurrentUser() user: any,
