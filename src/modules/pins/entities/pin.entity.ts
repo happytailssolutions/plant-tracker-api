@@ -32,11 +32,11 @@ export class Pin {
   longitude: number;
 
   @Field()
-  @Column({ type: 'varchar', length: 100, default: 'plant' })
+  @Column({ type: 'varchar', length: 100, default: 'Tree' })
   pinType: string;
 
   @Field()
-  @Column({ type: 'varchar', length: 50, default: 'active' })
+  @Column({ type: 'varchar', length: 50, default: 'Growing' })
   status: string;
 
   @Field(() => GraphQLJSON, { nullable: true })
