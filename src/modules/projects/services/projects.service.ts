@@ -122,7 +122,7 @@ export class ProjectsService {
     // Return the updated project
     const result = await this.projectsRepository.findOne({
       where: { id },
-      relations: ['owner'],
+      relations: ['owner', 'members'],
     });
     
     if (!result) {
@@ -183,7 +183,7 @@ export class ProjectsService {
     // Return the updated project
     const result = await this.projectsRepository.findOne({
       where: { id: projectId },
-      relations: ['owner'],
+      relations: ['owner', 'members'],
     });
     
     if (!result) {
@@ -225,7 +225,7 @@ export class ProjectsService {
     // Return the updated project
     const result = await this.projectsRepository.findOne({
       where: { id: projectId },
-      relations: ['owner'],
+      relations: ['owner', 'members'],
     });
     
     if (!result) {
