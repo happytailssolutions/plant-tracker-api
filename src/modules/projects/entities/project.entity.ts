@@ -98,4 +98,7 @@ export class Project {
     },
   })
   members: User[];
+
+  @Field(() => Number)
+  pinsCount: number;
 } 

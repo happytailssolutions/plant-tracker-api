@@ -6,6 +6,7 @@ import { ProjectUser } from '../entities/project-user.entity';
 import { CreateProjectInput } from '../dto/create-project.input';
 import { UpdateProjectInput } from '../dto/update-project.input';
 import { User } from '../../users/entities/user.entity';
+import { Pin } from '../../pins/entities/pin.entity';
 
 @Injectable()
 export class ProjectsService {
@@ -16,6 +17,8 @@ export class ProjectsService {
     private projectUsersRepository: Repository<ProjectUser>,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Pin)
+    private pinsRepository: Repository<Pin>,
   ) {}
 
   async findMyProjects(userId: string): Promise<Project[]> {
@@ -25,8 +28,18 @@ export class ProjectsService {
       relations: ['project', 'project.owner', 'project.members'],
     });
 
-    // Filter out any null projects and return the result
-    return projectUsers.map(pu => pu.project).filter(Boolean) as Project[];
+    // Filter out any null projects
+    const projects = projectUsers.map(pu => pu.project).filter(Boolean) as Project[];
+
+    // Calculate pins count for each project
+    for (const project of projects) {
+      const pinsCount = await this.pinsRepository.count({
+        where: { projectId: project.id, isActive: true },
+      });
+      project.pinsCount = pinsCount;
+    }
+
+    return projects;
   }
 
   async findProjectById(projectId: string, userId: string): Promise<Project> {
