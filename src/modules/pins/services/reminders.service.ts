@@ -1,7 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Reminder, ReminderStatus, NotificationType, RecurringPattern } from '../entities/reminder.entity';
+import {
+  Reminder,
+  ReminderStatus,
+  NotificationType,
+  RecurringPattern,
+} from '../entities/reminder.entity';
 import { CreateReminderInput, UpdateReminderInput } from '../dto';
 import { Pin } from '../entities/pin.entity';
 import { User } from '../../users/entities/user.entity';
@@ -17,7 +26,10 @@ export class RemindersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async createReminder(createReminderInput: CreateReminderInput, userId: string): Promise<Reminder> {
+  async createReminder(
+    createReminderInput: CreateReminderInput,
+    userId: string,
+  ): Promise<Reminder> {
     // Check if the plant exists and user has access
     const plant = await this.pinsRepository.findOne({
       where: { id: createReminderInput.plantId, isActive: true },
@@ -37,13 +49,17 @@ export class RemindersService {
       createdById: userId,
       dueDate: new Date(createReminderInput.dueDate),
       isRecurring: createReminderInput.isRecurring || false,
-      recurringPattern: createReminderInput.recurringPattern || RecurringPattern.NONE,
+      recurringPattern:
+        createReminderInput.recurringPattern || RecurringPattern.NONE,
     });
 
     return this.remindersRepository.save(reminder);
   }
 
-  async updateReminder(updateReminderInput: UpdateReminderInput, userId: string): Promise<Reminder> {
+  async updateReminder(
+    updateReminderInput: UpdateReminderInput,
+    userId: string,
+  ): Promise<Reminder> {
     const reminder = await this.remindersRepository.findOne({
       where: { id: updateReminderInput.id },
       relations: ['plantId'],
@@ -60,7 +76,7 @@ export class RemindersService {
 
     // Update the reminder
     Object.assign(reminder, updateReminderInput);
-    
+
     // Handle date conversion if dueDate is provided
     if (updateReminderInput.dueDate) {
       reminder.dueDate = new Date(updateReminderInput.dueDate);
@@ -92,7 +108,10 @@ export class RemindersService {
     return true;
   }
 
-  async findRemindersByPlant(plantId: string, userId: string): Promise<Reminder[]> {
+  async findRemindersByPlant(
+    plantId: string,
+    userId: string,
+  ): Promise<Reminder[]> {
     // Check if user has access to the plant
     const plant = await this.pinsRepository.findOne({
       where: { id: plantId, isActive: true },
@@ -155,7 +174,10 @@ export class RemindersService {
     reminder.completedAt = new Date();
 
     // If it's a recurring reminder, create the next one
-    if (reminder.isRecurring && reminder.recurringPattern !== RecurringPattern.NONE) {
+    if (
+      reminder.isRecurring &&
+      reminder.recurringPattern !== RecurringPattern.NONE
+    ) {
       await this.createNextRecurringReminder(reminder);
     }
 
@@ -200,7 +222,7 @@ export class RemindersService {
     type: 'weekly' | 'monthly' | 'yearly' | 'photo',
   ): Promise<Reminder> {
     const today = new Date();
-    let dueDate = new Date();
+    const dueDate = new Date();
     let title = '';
     let notificationType = NotificationType.WARNING;
 
@@ -231,10 +253,14 @@ export class RemindersService {
       plantId,
       createdById: userId,
       isRecurring: true,
-      recurringPattern: type === 'photo' ? RecurringPattern.YEARLY : 
-                      type === 'weekly' ? RecurringPattern.WEEKLY :
-                      type === 'monthly' ? RecurringPattern.MONTHLY :
-                      RecurringPattern.YEARLY,
+      recurringPattern:
+        type === 'photo'
+          ? RecurringPattern.YEARLY
+          : type === 'weekly'
+            ? RecurringPattern.WEEKLY
+            : type === 'monthly'
+              ? RecurringPattern.MONTHLY
+              : RecurringPattern.YEARLY,
     });
 
     return this.remindersRepository.save(reminder);

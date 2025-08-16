@@ -12,9 +12,7 @@ export class PinsResolver {
 
   @Query(() => [Pin])
   @UseGuards(GqlAuthGuard)
-  async allPins(
-    @CurrentUser() user: any,
-  ): Promise<Pin[]> {
+  async allPins(@CurrentUser() user: any): Promise<Pin[]> {
     return this.pinsService.findAllPins(user.id);
   }
 
@@ -71,4 +69,4 @@ export class PinsResolver {
   ): Promise<boolean> {
     return this.pinsService.deletePin(id, user.id);
   }
-} 
+}

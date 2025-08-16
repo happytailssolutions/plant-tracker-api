@@ -11,4 +11,4 @@ export class UpdateProjectInput extends PartialType(CreateProjectInput) {
 
   @Field(() => GraphQLJSON, { nullable: true })
   metadata?: any;
-} 
+}

@@ -12,4 +12,4 @@ import { Pin } from '../pins/entities/pin.entity';
   providers: [ProjectsService, ProjectsResolver],
   exports: [ProjectsService],
 })
-export class ProjectsModule {} 
+export class ProjectsModule {}

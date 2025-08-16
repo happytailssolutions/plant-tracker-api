@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 
 export enum ReminderStatus {
@@ -60,26 +66,26 @@ export class Reminder {
   dueTime: string;
 
   @Field(() => NotificationType)
-  @Column({ 
-    type: 'enum', 
-    enum: NotificationType, 
-    default: NotificationType.ALERT 
+  @Column({
+    type: 'enum',
+    enum: NotificationType,
+    default: NotificationType.ALERT,
   })
   notificationType: NotificationType;
 
   @Field(() => ReminderStatus)
-  @Column({ 
-    type: 'enum', 
-    enum: ReminderStatus, 
-    default: ReminderStatus.ACTIVE 
+  @Column({
+    type: 'enum',
+    enum: ReminderStatus,
+    default: ReminderStatus.ACTIVE,
   })
   status: ReminderStatus;
 
   @Field(() => RecurringPattern)
-  @Column({ 
-    type: 'enum', 
-    enum: RecurringPattern, 
-    default: RecurringPattern.NONE 
+  @Column({
+    type: 'enum',
+    enum: RecurringPattern,
+    default: RecurringPattern.NONE,
   })
   recurringPattern: RecurringPattern;
 

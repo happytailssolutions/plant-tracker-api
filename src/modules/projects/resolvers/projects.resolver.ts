@@ -24,7 +24,10 @@ export class ProjectsResolver {
 
   @Query(() => Project)
   @UseGuards(GqlAuthGuard)
-  async project(@Args('id', { type: () => ID }) id: string, @CurrentUser() user: any): Promise<Project> {
+  async project(
+    @Args('id', { type: () => ID }) id: string,
+    @CurrentUser() user: any,
+  ): Promise<Project> {
     return this.projectsService.findProjectById(id, user.id);
   }
 
@@ -72,6 +75,10 @@ export class ProjectsResolver {
     @Args('memberId', { type: () => ID }) memberId: string,
     @CurrentUser() user: any,
   ): Promise<Project> {
-    return this.projectsService.removeProjectMember(projectId, memberId, user.id);
+    return this.projectsService.removeProjectMember(
+      projectId,
+      memberId,
+      user.id,
+    );
   }
-} 
+}

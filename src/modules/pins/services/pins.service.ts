@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Pin } from '../entities/pin.entity';
@@ -20,7 +24,10 @@ export class PinsService {
     private projectUsersRepository: Repository<ProjectUser>,
   ) {}
 
-  async findPinsInBounds(mapBounds: MapBoundsInput, userId: string): Promise<Pin[]> {
+  async findPinsInBounds(
+    mapBounds: MapBoundsInput,
+    userId: string,
+  ): Promise<Pin[]> {
     const { north, south, east, west, projectId } = mapBounds;
 
     // Build the spatial query using PostGIS ST_MakeEnvelope
@@ -28,12 +35,15 @@ export class PinsService {
       .createQueryBuilder('pin')
       .leftJoinAndSelect('pin.project', 'project')
       .leftJoinAndSelect('pin.createdBy', 'createdBy')
-      .where('ST_Intersects(pin.location, ST_MakeEnvelope(:west, :south, :east, :north, 4326))', {
-        west,
-        south,
-        east,
-        north,
-      })
+      .where(
+        'ST_Intersects(pin.location, ST_MakeEnvelope(:west, :south, :east, :north, 4326))',
+        {
+          west,
+          south,
+          east,
+          north,
+        },
+      )
       .andWhere('pin.isActive = :isActive', { isActive: true });
 
     // If projectId is specified, filter by project and check access
@@ -59,8 +69,10 @@ export class PinsService {
         return [];
       }
 
-      const projectIds = userProjects.map(pu => pu.projectId);
-      queryBuilder.andWhere('pin.projectId IN (:...projectIds)', { projectIds });
+      const projectIds = userProjects.map((pu) => pu.projectId);
+      queryBuilder.andWhere('pin.projectId IN (:...projectIds)', {
+        projectIds,
+      });
     }
 
     // Also include public pins
@@ -76,7 +88,7 @@ export class PinsService {
       select: ['projectId'],
     });
 
-    const projectIds = userProjects.map(pu => pu.projectId);
+    const projectIds = userProjects.map((pu) => pu.projectId);
 
     // Build query to get pins from user's projects and public pins
     const queryBuilder = this.pinsRepository
@@ -86,18 +98,19 @@ export class PinsService {
       .where('pin.isActive = :isActive', { isActive: true });
 
     if (projectIds.length > 0) {
-      queryBuilder.andWhere('(pin.projectId IN (:...projectIds) OR pin.isPublic = :isPublic)', {
-        projectIds,
-        isPublic: true,
-      });
+      queryBuilder.andWhere(
+        '(pin.projectId IN (:...projectIds) OR pin.isPublic = :isPublic)',
+        {
+          projectIds,
+          isPublic: true,
+        },
+      );
     } else {
       // If user has no projects, only show public pins
       queryBuilder.andWhere('pin.isPublic = :isPublic', { isPublic: true });
     }
 
-    return queryBuilder
-      .orderBy('pin.createdAt', 'DESC')
-      .getMany();
+    return queryBuilder.orderBy('pin.createdAt', 'DESC').getMany();
   }
 
   async findPinById(pinId: string, userId: string): Promise<Pin> {
@@ -139,14 +152,24 @@ export class PinsService {
     });
   }
 
-  async createPin(createPinInput: CreatePinInput, userId: string): Promise<Pin> {
+  async createPin(
+    createPinInput: CreatePinInput,
+    userId: string,
+  ): Promise<Pin> {
     // Validate coordinates
-    if (typeof createPinInput.latitude !== 'number' || typeof createPinInput.longitude !== 'number') {
-      throw new Error('Invalid coordinates: latitude and longitude must be numbers');
+    if (
+      typeof createPinInput.latitude !== 'number' ||
+      typeof createPinInput.longitude !== 'number'
+    ) {
+      throw new Error(
+        'Invalid coordinates: latitude and longitude must be numbers',
+      );
     }
 
     if (createPinInput.latitude === 0 && createPinInput.longitude === 0) {
-      throw new Error('Invalid coordinates: cannot create pin at coordinates (0, 0)');
+      throw new Error(
+        'Invalid coordinates: cannot create pin at coordinates (0, 0)',
+      );
     }
 
     // Check if user has access to the project
@@ -159,7 +182,8 @@ export class PinsService {
     }
 
     // Create the pin using raw SQL to properly handle PostGIS geography
-    const result = await this.pinsRepository.query(`
+    const result = await this.pinsRepository.query(
+      `
       INSERT INTO pins (
         name, description, location, latitude, longitude, 
         "pinType", status, metadata, "isPublic", "isActive", 
@@ -169,20 +193,24 @@ export class PinsService {
         $6, $7, $8, $9, $10, 
         $11, $12, NOW(), NOW()
       ) RETURNING id
-    `, [
-      createPinInput.name,
-      createPinInput.description || null,
-      `POINT(${createPinInput.longitude} ${createPinInput.latitude})`,
-      createPinInput.latitude,
-      createPinInput.longitude,
-      createPinInput.pinType || 'plant',
-      createPinInput.status || 'active',
-      createPinInput.metadata ? JSON.stringify(createPinInput.metadata) : null,
-      createPinInput.isPublic || false,
-      true, // isActive
-      createPinInput.projectId,
-      userId
-    ]);
+    `,
+      [
+        createPinInput.name,
+        createPinInput.description || null,
+        `POINT(${createPinInput.longitude} ${createPinInput.latitude})`,
+        createPinInput.latitude,
+        createPinInput.longitude,
+        createPinInput.pinType || 'plant',
+        createPinInput.status || 'active',
+        createPinInput.metadata
+          ? JSON.stringify(createPinInput.metadata)
+          : null,
+        createPinInput.isPublic || false,
+        true, // isActive
+        createPinInput.projectId,
+        userId,
+      ],
+    );
 
     const pinId = result[0].id;
 
@@ -199,7 +227,10 @@ export class PinsService {
     return savedPin;
   }
 
-  async updatePin(updatePinInput: UpdatePinInput, userId: string): Promise<Pin> {
+  async updatePin(
+    updatePinInput: UpdatePinInput,
+    userId: string,
+  ): Promise<Pin> {
     const { id, ...updateData } = updatePinInput;
 
     // Check if pin exists and user has access
@@ -227,19 +258,22 @@ export class PinsService {
     // Update location if coordinates changed
     if (updateData.latitude && updateData.longitude) {
       // Use raw SQL to update the PostGIS geography column
-      await this.pinsRepository.query(`
+      await this.pinsRepository.query(
+        `
         UPDATE pins 
         SET location = ST_GeogFromText($1), 
             latitude = $2, 
             longitude = $3,
             "updatedAt" = NOW()
         WHERE id = $4
-      `, [
-        `POINT(${updateData.longitude} ${updateData.latitude})`,
-        updateData.latitude,
-        updateData.longitude,
-        id
-      ]);
+      `,
+        [
+          `POINT(${updateData.longitude} ${updateData.latitude})`,
+          updateData.latitude,
+          updateData.longitude,
+          id,
+        ],
+      );
     } else {
       // Update other fields without location
       await this.pinsRepository.update(id, updatePayload);
@@ -299,4 +333,4 @@ export class PinsService {
 
     return !!projectAccess || pin.isPublic;
   }
-} 
+}

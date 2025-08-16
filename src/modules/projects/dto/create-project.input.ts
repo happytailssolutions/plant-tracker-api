@@ -1,12 +1,24 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsString, IsOptional, IsNumber, IsBoolean, IsDateString, IsUUID, IsArray, Length, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsDateString,
+  IsUUID,
+  IsArray,
+  Length,
+  IsIn,
+} from 'class-validator';
 import { GraphQLJSON } from 'graphql-type-json';
 
 @InputType()
 export class CreateProjectInput {
   @Field()
   @IsString()
-  @Length(3, 100, { message: 'Project name must be between 3 and 100 characters' })
+  @Length(3, 100, {
+    message: 'Project name must be between 3 and 100 characters',
+  })
   name: string;
 
   @Field({ nullable: true })
@@ -42,9 +54,13 @@ export class CreateProjectInput {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  @IsIn(['', 'Garden', 'Farm', 'Reforestation', 'Orchard/Grove', 'Permaculture'], { 
-    message: 'Project type must be one of: Garden, Farm, Reforestation, Orchard/Grove, Permaculture' 
-  })
+  @IsIn(
+    ['', 'Garden', 'Farm', 'Reforestation', 'Orchard/Grove', 'Permaculture'],
+    {
+      message:
+        'Project type must be one of: Garden, Farm, Reforestation, Orchard/Grove, Permaculture',
+    },
+  )
   projectType?: string;
 
   @Field({ nullable: true })
@@ -76,4 +92,4 @@ export class CreateProjectInput {
   @IsArray()
   @IsUUID('4', { each: true })
   memberIds?: string[];
-} 
+}

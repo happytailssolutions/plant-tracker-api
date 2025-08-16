@@ -7,4 +7,4 @@ export class UpdatePinInput extends PartialType(CreatePinInput) {
   @Field()
   @IsUUID('4')
   id: string;
-} 
+}

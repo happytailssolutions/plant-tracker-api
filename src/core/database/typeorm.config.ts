@@ -44,4 +44,4 @@ export const getTypeOrmConfig = async (
     console.error('Failed to configure TypeORM:', err);
     throw err;
   }
-}; 
+};

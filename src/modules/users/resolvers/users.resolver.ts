@@ -17,4 +17,4 @@ export class UsersResolver {
     // We can simply return the user object directly.
     return user;
   }
-} 
+}

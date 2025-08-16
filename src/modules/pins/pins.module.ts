@@ -11,8 +11,10 @@ import { Project } from '../projects/entities/project.entity';
 import { ProjectUser } from '../projects/entities/project-user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pin, Reminder, User, Project, ProjectUser])],
+  imports: [
+    TypeOrmModule.forFeature([Pin, Reminder, User, Project, ProjectUser]),
+  ],
   providers: [PinsService, RemindersService, PinsResolver, RemindersResolver],
   exports: [PinsService, RemindersService],
 })
-export class PinsModule {} 
+export class PinsModule {}
