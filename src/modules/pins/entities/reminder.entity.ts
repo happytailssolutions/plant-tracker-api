@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, ID, registerEnumType, GraphQLISODateTime } from '@nestjs/graphql';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -65,7 +65,7 @@ export class Reminder {
   @Column({ nullable: true })
   description?: string;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   @Column({ type: 'date' })
   dueDate: Date;
 
@@ -101,15 +101,15 @@ export class Reminder {
   })
   recurringPattern?: RecurringPattern;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field({ nullable: true })
+  @Field(() => GraphQLISODateTime, { nullable: true })
   @Column({ nullable: true })
   completedAt?: Date;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   @UpdateDateColumn()
   updatedAt: Date;
 
