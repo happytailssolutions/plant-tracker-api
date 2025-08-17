@@ -78,7 +78,7 @@ export class RemindersResolver {
 
   @ResolveField(() => Pin)
   async plant(@Parent() reminder: Reminder): Promise<Pin> {
-    // This will be resolved by the Pin entity relationship
-    return reminder.plantId as any;
+    // Return the plant relation that should already be loaded
+    return reminder.plant;
   }
 }

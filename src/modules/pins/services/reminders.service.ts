@@ -107,6 +107,7 @@ export class RemindersService {
 
     return this.remindersRepository.find({
       where: { plantId },
+      relations: ['plant'],
       order: { dueDate: 'ASC' },
     });
   }
