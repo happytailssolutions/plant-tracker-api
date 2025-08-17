@@ -1,10 +1,9 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Reminder, ReminderStatus, NotificationType, RecurringPattern } from '../entities/reminder.entity';
-import { CreateReminderInput, UpdateReminderInput } from '../dto';
+import { Reminder, NotificationType, ReminderStatus, RecurringPattern } from '../entities/reminder.entity';
 import { Pin } from '../entities/pin.entity';
-import { User } from '../../users/entities/user.entity';
+import { CreateReminderInput, UpdateReminderInput } from '../dto';
 
 @Injectable()
 export class RemindersService {
@@ -13,93 +12,88 @@ export class RemindersService {
     private remindersRepository: Repository<Reminder>,
     @InjectRepository(Pin)
     private pinsRepository: Repository<Pin>,
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
   ) {}
 
-  async createReminder(createReminderInput: CreateReminderInput, userId: string): Promise<Reminder> {
-    // Check if the plant exists and user has access
+  async createReminder(input: CreateReminderInput, userId: string): Promise<Reminder> {
+    // Verify that the plant belongs to the user
     const plant = await this.pinsRepository.findOne({
-      where: { id: createReminderInput.plantId, isActive: true },
-      relations: ['project'],
+      where: { id: input.plantId, createdById: userId },
     });
 
     if (!plant) {
-      throw new NotFoundException('Plant not found');
+      throw new NotFoundException('Plant not found or you do not have permission to access it');
     }
 
-    // Check if user has access to the project
-    // This would need to be implemented based on your project access logic
-    // For now, we'll assume the user has access if they can see the plant
-
     const reminder = this.remindersRepository.create({
-      ...createReminderInput,
+      ...input,
       createdById: userId,
-      dueDate: new Date(createReminderInput.dueDate),
-      isRecurring: createReminderInput.isRecurring || false,
-      recurringPattern: createReminderInput.recurringPattern || RecurringPattern.NONE,
+      dueDate: new Date(input.dueDate),
     });
 
     return this.remindersRepository.save(reminder);
   }
 
-  async updateReminder(updateReminderInput: UpdateReminderInput, userId: string): Promise<Reminder> {
+  async updateReminder(input: UpdateReminderInput, userId: string): Promise<Reminder> {
     const reminder = await this.remindersRepository.findOne({
-      where: { id: updateReminderInput.id },
-      relations: ['plantId'],
+      where: { id: input.id },
+      relations: ['plant'],
     });
 
     if (!reminder) {
       throw new NotFoundException('Reminder not found');
     }
 
-    // Check if user owns the reminder or has access to the plant
     if (reminder.createdById !== userId) {
-      throw new ForbiddenException('Access denied to this reminder');
+      throw new ForbiddenException('You do not have permission to update this reminder');
     }
 
-    // Update the reminder
-    Object.assign(reminder, updateReminderInput);
-    
-    // Handle date conversion if dueDate is provided
-    if (updateReminderInput.dueDate) {
-      reminder.dueDate = new Date(updateReminderInput.dueDate);
-    }
-
-    // Handle completedAt conversion if provided
-    if (updateReminderInput.completedAt) {
-      reminder.completedAt = new Date(updateReminderInput.completedAt);
-    }
+    // Update the reminder with new data
+    Object.assign(reminder, {
+      ...input,
+      dueDate: input.dueDate ? new Date(input.dueDate) : reminder.dueDate,
+      updatedAt: new Date(),
+    });
 
     return this.remindersRepository.save(reminder);
   }
 
   async deleteReminder(id: string, userId: string): Promise<boolean> {
     const reminder = await this.remindersRepository.findOne({
-      where: { id },
+      where: { id, createdById: userId },
     });
 
     if (!reminder) {
-      throw new NotFoundException('Reminder not found');
-    }
-
-    // Check if user owns the reminder
-    if (reminder.createdById !== userId) {
-      throw new ForbiddenException('Access denied to this reminder');
+      throw new NotFoundException('Reminder not found or you do not have permission to delete it');
     }
 
     await this.remindersRepository.remove(reminder);
     return true;
   }
 
+  async markReminderAsCompleted(id: string, userId: string): Promise<Reminder> {
+    const reminder = await this.remindersRepository.findOne({
+      where: { id, createdById: userId },
+    });
+
+    if (!reminder) {
+      throw new NotFoundException('Reminder not found or you do not have permission to update it');
+    }
+
+    reminder.status = ReminderStatus.COMPLETED;
+    reminder.completedAt = new Date();
+    reminder.updatedAt = new Date();
+
+    return this.remindersRepository.save(reminder);
+  }
+
   async findRemindersByPlant(plantId: string, userId: string): Promise<Reminder[]> {
-    // Check if user has access to the plant
+    // Verify that the plant belongs to the user
     const plant = await this.pinsRepository.findOne({
-      where: { id: plantId, isActive: true },
+      where: { id: plantId, createdById: userId },
     });
 
     if (!plant) {
-      throw new NotFoundException('Plant not found');
+      throw new NotFoundException('Plant not found or you do not have permission to access it');
     }
 
     return this.remindersRepository.find({
@@ -109,16 +103,12 @@ export class RemindersService {
   }
 
   async findActiveRemindersForUser(userId: string): Promise<Reminder[]> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     return this.remindersRepository.find({
-      where: {
-        createdById: userId,
-        status: ReminderStatus.ACTIVE,
-        dueDate: today,
+      where: { 
+        createdById: userId, 
+        status: ReminderStatus.ACTIVE 
       },
-      relations: ['plantId'],
+      relations: ['plant'],
       order: { dueDate: 'ASC' },
     });
   }
@@ -127,116 +117,83 @@ export class RemindersService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return this.remindersRepository.find({
-      where: {
-        createdById: userId,
-        status: ReminderStatus.ACTIVE,
-        dueDate: today,
-      },
-      relations: ['plantId'],
-      order: { dueDate: 'ASC' },
-    });
-  }
-
-  async markReminderAsCompleted(id: string, userId: string): Promise<Reminder> {
-    const reminder = await this.remindersRepository.findOne({
-      where: { id },
-    });
-
-    if (!reminder) {
-      throw new NotFoundException('Reminder not found');
-    }
-
-    if (reminder.createdById !== userId) {
-      throw new ForbiddenException('Access denied to this reminder');
-    }
-
-    reminder.status = ReminderStatus.COMPLETED;
-    reminder.completedAt = new Date();
-
-    // If it's a recurring reminder, create the next one
-    if (reminder.isRecurring && reminder.recurringPattern !== RecurringPattern.NONE) {
-      await this.createNextRecurringReminder(reminder);
-    }
-
-    return this.remindersRepository.save(reminder);
-  }
-
-  private async createNextRecurringReminder(reminder: Reminder): Promise<void> {
-    const nextDueDate = new Date(reminder.dueDate);
-
-    switch (reminder.recurringPattern) {
-      case RecurringPattern.WEEKLY:
-        nextDueDate.setDate(nextDueDate.getDate() + 7);
-        break;
-      case RecurringPattern.MONTHLY:
-        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
-        break;
-      case RecurringPattern.YEARLY:
-        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
-        break;
-      default:
-        return;
-    }
-
-    const nextReminder = this.remindersRepository.create({
-      title: reminder.title,
-      description: reminder.description,
-      dueDate: nextDueDate,
-      dueTime: reminder.dueTime,
-      notificationType: reminder.notificationType,
-      recurringPattern: reminder.recurringPattern,
-      isRecurring: reminder.isRecurring,
-      plantId: reminder.plantId,
-      createdById: reminder.createdById,
-    });
-
-    await this.remindersRepository.save(nextReminder);
+    return this.remindersRepository
+      .createQueryBuilder('reminder')
+      .leftJoinAndSelect('reminder.plant', 'plant')
+      .where('reminder.createdById = :userId', { userId })
+      .andWhere('reminder.status = :status', { status: ReminderStatus.ACTIVE })
+      .andWhere('reminder.dueDate < :today', { today })
+      .orderBy('reminder.dueDate', 'ASC')
+      .getMany();
   }
 
   async createQuickReminder(
-    plantId: string,
-    userId: string,
-    type: 'weekly' | 'monthly' | 'yearly' | 'photo',
+    plantId: string, 
+    userId: string, 
+    type: 'weekly' | 'monthly' | 'yearly' | 'photo'
   ): Promise<Reminder> {
-    const today = new Date();
+    // Verify that the plant belongs to the user
+    const plant = await this.pinsRepository.findOne({
+      where: { id: plantId, createdById: userId },
+    });
+
+    if (!plant) {
+      throw new NotFoundException('Plant not found or you do not have permission to access it');
+    }
+
+    const now = new Date();
     let dueDate = new Date();
     let title = '';
     let notificationType = NotificationType.WARNING;
+    let recurringPattern: RecurringPattern | undefined;
 
     switch (type) {
       case 'weekly':
-        dueDate.setDate(today.getDate() + 7);
+        dueDate.setDate(now.getDate() + 7);
         title = 'Water plant';
+        recurringPattern = RecurringPattern.WEEKLY;
         break;
       case 'monthly':
-        dueDate.setMonth(today.getMonth() + 1);
+        dueDate.setMonth(now.getMonth() + 1);
         title = 'Fertilize';
+        recurringPattern = RecurringPattern.MONTHLY;
         break;
       case 'yearly':
-        dueDate.setFullYear(today.getFullYear() + 1);
+        dueDate.setFullYear(now.getFullYear() + 1);
         title = 'Prune';
+        recurringPattern = RecurringPattern.YEARLY;
         break;
       case 'photo':
-        dueDate.setFullYear(today.getFullYear() + 1);
+        dueDate.setFullYear(now.getFullYear() + 1);
         title = 'Update plant photo';
         notificationType = NotificationType.GENERAL;
+        recurringPattern = RecurringPattern.YEARLY;
         break;
     }
 
     const reminder = this.remindersRepository.create({
+      plantId,
       title,
       dueDate,
       notificationType,
-      plantId,
-      createdById: userId,
+      recurringPattern,
       isRecurring: true,
-      recurringPattern: type === 'photo' ? RecurringPattern.YEARLY : 
-                      type === 'weekly' ? RecurringPattern.WEEKLY :
-                      type === 'monthly' ? RecurringPattern.MONTHLY :
-                      RecurringPattern.YEARLY,
+      createdById: userId,
     });
 
     return this.remindersRepository.save(reminder);
+  }
+
+  async markOverdueReminders(): Promise<void> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    await this.remindersRepository
+      .createQueryBuilder()
+      .update(Reminder)
+      .set({ status: ReminderStatus.OVERDUE })
+      .where('status = :activeStatus', { activeStatus: ReminderStatus.ACTIVE })
+      .andWhere('dueDate < :today', { today })
+      .execute();
   }
 }

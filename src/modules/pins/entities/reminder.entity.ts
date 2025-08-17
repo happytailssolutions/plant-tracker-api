@@ -1,5 +1,20 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
+import { Pin } from './pin.entity';
+
+export enum NotificationType {
+  GENERAL = 'general',
+  WARNING = 'warning',
+  ALERT = 'alert',
+}
 
 export enum ReminderStatus {
   ACTIVE = 'active',
@@ -8,48 +23,47 @@ export enum ReminderStatus {
   OVERDUE = 'overdue',
 }
 
-export enum NotificationType {
-  GENERAL = 'general',
-  WARNING = 'warning',
-  ALERT = 'alert',
-}
-
 export enum RecurringPattern {
-  NONE = 'none',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   YEARLY = 'yearly',
 }
 
-registerEnumType(ReminderStatus, {
-  name: 'ReminderStatus',
-  description: 'The status of a reminder',
-});
-
 registerEnumType(NotificationType, {
   name: 'NotificationType',
-  description: 'The type of notification for a reminder',
+});
+
+registerEnumType(ReminderStatus, {
+  name: 'ReminderStatus',
 });
 
 registerEnumType(RecurringPattern, {
   name: 'RecurringPattern',
-  description: 'The recurring pattern for a reminder',
 });
 
 @ObjectType()
-@Entity('reminders')
+@Entity('plant_reminders')
 export class Reminder {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Field()
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
+  plantId: string;
+
+  @Field(() => Pin)
+  @ManyToOne(() => Pin, (pin) => pin.reminders)
+  @JoinColumn({ name: 'plantId' })
+  plant: Pin;
+
+  @Field()
+  @Column()
   title: string;
 
   @Field({ nullable: true })
-  @Column({ type: 'text', nullable: true })
-  description: string;
+  @Column({ nullable: true })
+  description?: string;
 
   @Field()
   @Column({ type: 'date' })
@@ -57,54 +71,49 @@ export class Reminder {
 
   @Field({ nullable: true })
   @Column({ type: 'time', nullable: true })
-  dueTime: string;
+  dueTime?: string;
 
   @Field(() => NotificationType)
-  @Column({ 
-    type: 'enum', 
-    enum: NotificationType, 
-    default: NotificationType.ALERT 
+  @Column({
+    type: 'enum',
+    enum: NotificationType,
+    default: NotificationType.GENERAL,
   })
   notificationType: NotificationType;
 
   @Field(() => ReminderStatus)
-  @Column({ 
-    type: 'enum', 
-    enum: ReminderStatus, 
-    default: ReminderStatus.ACTIVE 
+  @Column({
+    type: 'enum',
+    enum: ReminderStatus,
+    default: ReminderStatus.ACTIVE,
   })
   status: ReminderStatus;
 
-  @Field(() => RecurringPattern)
-  @Column({ 
-    type: 'enum', 
-    enum: RecurringPattern, 
-    default: RecurringPattern.NONE 
-  })
-  recurringPattern: RecurringPattern;
-
   @Field()
-  @Column({ type: 'boolean', default: false })
+  @Column({ default: false })
   isRecurring: boolean;
+
+  @Field(() => RecurringPattern, { nullable: true })
+  @Column({
+    type: 'enum',
+    enum: RecurringPattern,
+    nullable: true,
+  })
+  recurringPattern?: RecurringPattern;
 
   @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  completedAt?: Date;
+
   @Field()
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Field({ nullable: true })
-  @Column({ type: 'timestamp', nullable: true })
-  completedAt: Date;
-
-  // Relationships
-  @Field(() => String)
-  @Column({ type: 'uuid' })
-  plantId: string;
-
-  @Field(() => String)
-  @Column({ type: 'uuid' })
+  @Field()
+  @Column()
   createdById: string;
 }
