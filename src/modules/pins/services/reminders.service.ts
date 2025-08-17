@@ -26,7 +26,6 @@ export class RemindersService {
 
     const reminder = this.remindersRepository.create({
       ...input,
-      createdById: userId,
       dueDate: new Date(input.dueDate),
     });
 
@@ -43,7 +42,7 @@ export class RemindersService {
       throw new NotFoundException('Reminder not found');
     }
 
-    if (reminder.createdById !== userId) {
+    if (reminder.plant.createdById !== userId) {
       throw new ForbiddenException('You do not have permission to update this reminder');
     }
 
@@ -59,11 +58,16 @@ export class RemindersService {
 
   async deleteReminder(id: string, userId: string): Promise<boolean> {
     const reminder = await this.remindersRepository.findOne({
-      where: { id, createdById: userId },
+      where: { id },
+      relations: ['plant'],
     });
 
     if (!reminder) {
-      throw new NotFoundException('Reminder not found or you do not have permission to delete it');
+      throw new NotFoundException('Reminder not found');
+    }
+
+    if (reminder.plant.createdById !== userId) {
+      throw new ForbiddenException('You do not have permission to delete this reminder');
     }
 
     await this.remindersRepository.remove(reminder);
@@ -72,11 +76,16 @@ export class RemindersService {
 
   async markReminderAsCompleted(id: string, userId: string): Promise<Reminder> {
     const reminder = await this.remindersRepository.findOne({
-      where: { id, createdById: userId },
+      where: { id },
+      relations: ['plant'],
     });
 
     if (!reminder) {
-      throw new NotFoundException('Reminder not found or you do not have permission to update it');
+      throw new NotFoundException('Reminder not found');
+    }
+
+    if (reminder.plant.createdById !== userId) {
+      throw new ForbiddenException('You do not have permission to update this reminder');
     }
 
     reminder.status = ReminderStatus.COMPLETED;
@@ -97,20 +106,19 @@ export class RemindersService {
     }
 
     return this.remindersRepository.find({
-      where: { plantId, createdById: userId },
+      where: { plantId },
       order: { dueDate: 'ASC' },
     });
   }
 
   async findActiveRemindersForUser(userId: string): Promise<Reminder[]> {
-    return this.remindersRepository.find({
-      where: { 
-        createdById: userId, 
-        status: ReminderStatus.ACTIVE 
-      },
-      relations: ['plant'],
-      order: { dueDate: 'ASC' },
-    });
+    return this.remindersRepository
+      .createQueryBuilder('reminder')
+      .leftJoinAndSelect('reminder.plant', 'plant')
+      .where('plant.createdById = :userId', { userId })
+      .andWhere('reminder.status = :status', { status: ReminderStatus.ACTIVE })
+      .orderBy('reminder.dueDate', 'ASC')
+      .getMany();
   }
 
   async findOverdueRemindersForUser(userId: string): Promise<Reminder[]> {
@@ -120,7 +128,7 @@ export class RemindersService {
     return this.remindersRepository
       .createQueryBuilder('reminder')
       .leftJoinAndSelect('reminder.plant', 'plant')
-      .where('reminder.createdById = :userId', { userId })
+      .where('plant.createdById = :userId', { userId })
       .andWhere('reminder.status = :status', { status: ReminderStatus.ACTIVE })
       .andWhere('reminder.dueDate < :today', { today })
       .orderBy('reminder.dueDate', 'ASC')

@@ -113,7 +113,5 @@ export class Reminder {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Field()
-  @Column()
-  createdById: string;
+  // createdById removed - we use plant.createdById for user ownership
 }
