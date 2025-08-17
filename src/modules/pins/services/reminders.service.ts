@@ -179,15 +179,14 @@ export class RemindersService {
         break;
     }
 
-    const reminder = this.remindersRepository.create({
-      plantId,
-      title,
-      dueDate,
-      notificationType,
-      recurringPattern,
-      isRecurring: true,
-      createdById: userId,
-    });
+         const reminder = this.remindersRepository.create({
+       plantId,
+       title,
+       dueDate,
+       notificationType,
+       recurringPattern,
+       isRecurring: true,
+     });
 
     return this.remindersRepository.save(reminder);
   }
