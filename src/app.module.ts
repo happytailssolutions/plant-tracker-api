@@ -25,6 +25,9 @@ import { AuthModule } from './auth/auth.module';
       autoSchemaFile: 'dist/schema.gql',
       sortSchema: true,
       playground: true,
+      buildSchemaOptions: {
+        dateScalarMode: 'isoDate',
+      },
     }),
     UsersModule,
     ProjectsModule,
