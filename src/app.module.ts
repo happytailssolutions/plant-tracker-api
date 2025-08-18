@@ -40,7 +40,6 @@ import { ProjectUser } from './modules/projects/entities/project-user.entity';
       buildSchemaOptions: {
         dateScalarMode: 'isoDate',
         numberScalarMode: 'float',
-        validate: false,
       },
       context: ({ req }) => ({ req }),
     }),
