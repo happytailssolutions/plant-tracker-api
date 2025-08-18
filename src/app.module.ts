@@ -21,13 +21,8 @@ import { ProjectUser } from './modules/projects/entities/project-user.entity';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const config = await getTypeOrmConfig(configService);
-        return {
-          ...config,
-          entities: [Pin, Reminder, User, Project, ProjectUser],
-        };
-      },
+      useFactory: async (configService: ConfigService) =>
+        await getTypeOrmConfig(configService),
       inject: [ConfigService],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -41,7 +36,6 @@ import { ProjectUser } from './modules/projects/entities/project-user.entity';
         dateScalarMode: 'isoDate',
         numberScalarMode: 'float',
       },
-      context: ({ req }) => ({ req }),
     }),
     UsersModule,
     ProjectsModule,
