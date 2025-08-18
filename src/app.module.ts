@@ -10,14 +10,24 @@ import { UsersModule } from './modules/users/users.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { PinsModule } from './modules/pins/pins.module';
 import { AuthModule } from './auth/auth.module';
+import { Pin } from './modules/pins/entities/pin.entity';
+import { Reminder } from './modules/pins/entities/reminder.entity';
+import { User } from './modules/users/entities/user.entity';
+import { Project } from './modules/projects/entities/project.entity';
+import { ProjectUser } from './modules/projects/entities/project-user.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) =>
-        await getTypeOrmConfig(configService),
+      useFactory: async (configService: ConfigService) => {
+        const config = await getTypeOrmConfig(configService);
+        return {
+          ...config,
+          entities: [Pin, Reminder, User, Project, ProjectUser],
+        };
+      },
       inject: [ConfigService],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -25,9 +35,14 @@ import { AuthModule } from './auth/auth.module';
       autoSchemaFile: 'dist/schema.gql',
       sortSchema: true,
       playground: true,
+      debug: true,
+      introspection: true,
       buildSchemaOptions: {
         dateScalarMode: 'isoDate',
+        numberScalarMode: 'float',
+        validate: false,
       },
+      context: ({ req }) => ({ req }),
     }),
     UsersModule,
     ProjectsModule,

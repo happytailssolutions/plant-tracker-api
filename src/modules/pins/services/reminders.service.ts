@@ -24,9 +24,15 @@ export class RemindersService {
       throw new NotFoundException('Plant not found or you do not have permission to access it');
     }
 
+    // Ensure proper date handling - convert string to Date object
+    const dueDate = new Date(input.dueDate);
+    if (isNaN(dueDate.getTime())) {
+      throw new Error('Invalid due date format');
+    }
+
     const reminder = this.remindersRepository.create({
       ...input,
-      dueDate: new Date(input.dueDate),
+      dueDate: dueDate,
     });
 
     return this.remindersRepository.save(reminder);
@@ -47,11 +53,19 @@ export class RemindersService {
     }
 
     // Update the reminder with new data
-    Object.assign(reminder, {
-      ...input,
-      dueDate: input.dueDate ? new Date(input.dueDate) : reminder.dueDate,
-      updatedAt: new Date(),
-    });
+    const updateData: any = { ...input };
+    
+    if (input.dueDate) {
+      const dueDate = new Date(input.dueDate);
+      if (isNaN(dueDate.getTime())) {
+        throw new Error('Invalid due date format');
+      }
+      updateData.dueDate = dueDate;
+    }
+    
+    updateData.updatedAt = new Date();
+
+    Object.assign(reminder, updateData);
 
     return this.remindersRepository.save(reminder);
   }

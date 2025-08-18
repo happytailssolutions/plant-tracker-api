@@ -81,6 +81,6 @@ export class Pin {
 
   // Reminders relationship
   @Field(() => [Reminder], { nullable: true })
-  @OneToMany(() => Reminder, reminder => reminder.plantId)
+  @OneToMany(() => Reminder, reminder => reminder.plant)
   reminders: Reminder[];
 } 
