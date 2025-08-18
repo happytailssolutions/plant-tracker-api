@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ResolveField, Parent, ID } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from '../../../auth/guards/gql-auth.guard';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
@@ -31,7 +31,7 @@ export class RemindersResolver {
 
   @Mutation(() => Boolean)
   async deleteReminder(
-    @Args('id') id: string,
+    @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: User,
   ): Promise<boolean> {
     return this.remindersService.deleteReminder(id, user.id);
@@ -39,7 +39,7 @@ export class RemindersResolver {
 
   @Mutation(() => Reminder)
   async markReminderAsCompleted(
-    @Args('id') id: string,
+    @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: User,
   ): Promise<Reminder> {
     return this.remindersService.markReminderAsCompleted(id, user.id);
@@ -47,7 +47,7 @@ export class RemindersResolver {
 
   @Query(() => [Reminder])
   async remindersByPlant(
-    @Args('plantId') plantId: string,
+    @Args('plantId', { type: () => ID }) plantId: string,
     @CurrentUser() user: User,
   ): Promise<Reminder[]> {
     return this.remindersService.findRemindersByPlant(plantId, user.id);
@@ -69,7 +69,7 @@ export class RemindersResolver {
 
   @Mutation(() => Reminder)
   async createQuickReminder(
-    @Args('plantId') plantId: string,
+    @Args('plantId', { type: () => ID }) plantId: string,
     @Args('type') type: 'weekly' | 'monthly' | 'yearly' | 'photo',
     @CurrentUser() user: User,
   ): Promise<Reminder> {
