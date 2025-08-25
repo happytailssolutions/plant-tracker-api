@@ -9,9 +9,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  console.log('Starting bootstrap process...');
+  // Add version logging to help debug deployment issues
+  const version = '0a1af2e'; // This should match your git commit
+  console.log(`🚀 Plant Tracker API starting - Version: ${version}`);
+  console.log(`🚀 Build timestamp: ${new Date().toISOString()}`);
+  
   const app = await NestFactory.create(AppModule);
   await app.listen(process.env.PORT ?? 3000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  console.log(`🚀 Plant Tracker API running on port 3000 - Version: ${version}`);
 }
 bootstrap();
