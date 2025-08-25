@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, registerEnumType, GraphQLISODateTime, GraphQLDate } from '@nestjs/graphql';
+import { ObjectType, Field, ID, registerEnumType, GraphQLISODateTime } from '@nestjs/graphql';
 import {
   Entity,
   PrimaryGeneratedColumn,
