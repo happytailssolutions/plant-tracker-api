@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, registerEnumType, GraphQLISODateTime } from '@nestjs/graphql';
+import { ObjectType, Field, ID, registerEnumType, GraphQLISODateTime, GraphQLDate } from '@nestjs/graphql';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -65,7 +65,7 @@ export class Reminder {
   @Column({ nullable: true })
   description?: string;
 
-  @Field(() => GraphQLISODateTime)
+  @Field(() => GraphQLDate)
   @Column({ type: 'date' })
   dueDate: Date;
 
