@@ -65,7 +65,7 @@ export class Reminder {
   @Column({ nullable: true })
   description?: string;
 
-  @Field(() => GraphQLDate)
+  @Field(() => String)
   @Column({ type: 'date' })
   dueDate: Date;
 
