@@ -2,13 +2,16 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { lookup } from 'node:dns/promises';
 import { URL } from 'node:url';
+import { databaseConfig } from '../../config/database.config';
 
 export const getTypeOrmConfig = async (
   configService: ConfigService,
 ): Promise<TypeOrmModuleOptions> => {
-  const databaseUrl = configService.get<string>('DATABASE_URL');
+  // Try to get from environment variables first, then fall back to config
+  const databaseUrl = configService.get<string>('DATABASE_URL') || databaseConfig.DATABASE_URL;
+  
   if (!databaseUrl) {
-    throw new Error('DATABASE_URL environment variable not set');
+    throw new Error('DATABASE_URL not found in environment variables or config');
   }
 
   try {
@@ -27,9 +30,9 @@ export const getTypeOrmConfig = async (
       url: newDatabaseUrl,
       entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
       migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-      migrationsRun: configService.get<string>('NODE_ENV') === 'production',
-      synchronize: configService.get<string>('NODE_ENV') === 'development', // false for production
-      logging: configService.get<string>('NODE_ENV') === 'development',
+      migrationsRun: configService.get<string>('NODE_ENV') === 'production' || databaseConfig.NODE_ENV === 'production',
+      synchronize: configService.get<string>('NODE_ENV') === 'development' || databaseConfig.NODE_ENV === 'development', // false for production
+      logging: configService.get<string>('NODE_ENV') === 'development' || databaseConfig.NODE_ENV === 'development',
       ssl: {
         rejectUnauthorized: false,
       },
@@ -44,4 +47,4 @@ export const getTypeOrmConfig = async (
     console.error('Failed to configure TypeORM:', err);
     throw err;
   }
-}; 
+};

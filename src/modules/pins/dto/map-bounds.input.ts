@@ -22,4 +22,4 @@ export class MapBoundsInput {
   @Field({ nullable: true })
   @IsOptional()
   projectId?: string;
-} 
+}

@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { User } from '../../users/entities/user.entity';
 import { Project } from '../../projects/entities/project.entity';
@@ -81,6 +90,6 @@ export class Pin {
 
   // Reminders relationship
   @Field(() => [Reminder], { nullable: true })
-  @OneToMany(() => Reminder, reminder => reminder.plant)
+  @OneToMany(() => Reminder, (reminder) => reminder.plant)
   reminders: Reminder[];
-} 
+}

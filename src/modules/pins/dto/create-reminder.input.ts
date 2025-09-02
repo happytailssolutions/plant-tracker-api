@@ -1,6 +1,16 @@
 import { InputType, Field, ID } from '@nestjs/graphql';
-import { IsString, IsOptional, IsUUID, IsDateString, IsEnum, IsBoolean } from 'class-validator';
-import { NotificationType, RecurringPattern } from '../entities/reminder.entity';
+import {
+  IsString,
+  IsOptional,
+  IsUUID,
+  IsDateString,
+  IsEnum,
+  IsBoolean,
+} from 'class-validator';
+import {
+  NotificationType,
+  RecurringPattern,
+} from '../entities/reminder.entity';
 
 @InputType()
 export class CreateReminderInput {

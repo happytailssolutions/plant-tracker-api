@@ -1,4 +1,12 @@
-import { Resolver, Query, Mutation, Args, ResolveField, Parent, ID } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ResolveField,
+  Parent,
+  ID,
+} from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from '../../../auth/guards/gql-auth.guard';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
@@ -54,9 +62,7 @@ export class RemindersResolver {
   }
 
   @Query(() => [Reminder])
-  async activeRemindersForUser(
-    @CurrentUser() user: User,
-  ): Promise<Reminder[]> {
+  async activeRemindersForUser(@CurrentUser() user: User): Promise<Reminder[]> {
     return this.remindersService.findActiveRemindersForUser(user.id);
   }
 
@@ -77,7 +83,7 @@ export class RemindersResolver {
   }
 
   @ResolveField(() => Pin)
-  async plant(@Parent() reminder: Reminder): Promise<Pin> {
+  plant(@Parent() reminder: Reminder): Pin {
     // Return the plant relation that should already be loaded
     return reminder.plant;
   }

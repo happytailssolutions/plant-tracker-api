@@ -11,10 +11,10 @@ export class UsersResolver {
 
   @Query(() => User)
   @UseGuards(GqlAuthGuard)
-  async me(@CurrentUser() user: User): Promise<User> {
+  me(@CurrentUser() user: User): User {
     // The user object is injected by the GqlAuthGuard after being processed
     // by the JwtStrategy (which finds or creates the user).
     // We can simply return the user object directly.
     return user;
   }
-} 
+}

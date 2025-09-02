@@ -1,7 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Reminder, NotificationType, ReminderStatus, RecurringPattern } from '../entities/reminder.entity';
+import {
+  Reminder,
+  NotificationType,
+  ReminderStatus,
+  RecurringPattern,
+} from '../entities/reminder.entity';
 import { Pin } from '../entities/pin.entity';
 import { CreateReminderInput, UpdateReminderInput } from '../dto';
 
@@ -14,14 +23,19 @@ export class RemindersService {
     private pinsRepository: Repository<Pin>,
   ) {}
 
-  async createReminder(input: CreateReminderInput, userId: string): Promise<Reminder> {
+  async createReminder(
+    input: CreateReminderInput,
+    userId: string,
+  ): Promise<Reminder> {
     // Verify that the plant belongs to the user
     const plant = await this.pinsRepository.findOne({
       where: { id: input.plantId, createdById: userId },
     });
 
     if (!plant) {
-      throw new NotFoundException('Plant not found or you do not have permission to access it');
+      throw new NotFoundException(
+        'Plant not found or you do not have permission to access it',
+      );
     }
 
     // Ensure proper date handling - convert string to Date object
@@ -38,7 +52,10 @@ export class RemindersService {
     return this.remindersRepository.save(reminder);
   }
 
-  async updateReminder(input: UpdateReminderInput, userId: string): Promise<Reminder> {
+  async updateReminder(
+    input: UpdateReminderInput,
+    userId: string,
+  ): Promise<Reminder> {
     const reminder = await this.remindersRepository.findOne({
       where: { id: input.id },
       relations: ['plant'],
@@ -49,20 +66,25 @@ export class RemindersService {
     }
 
     if (reminder.plant.createdById !== userId) {
-      throw new ForbiddenException('You do not have permission to update this reminder');
+      throw new ForbiddenException(
+        'You do not have permission to update this reminder',
+      );
     }
 
     // Update the reminder with new data
-    const updateData: any = { ...input };
-    
+    const updateData: Partial<Omit<UpdateReminderInput, 'id'>> & {
+      updatedAt?: Date;
+    } = { ...input };
+
     if (input.dueDate) {
       const dueDate = new Date(input.dueDate);
       if (isNaN(dueDate.getTime())) {
         throw new Error('Invalid due date format');
       }
-      updateData.dueDate = dueDate;
+      // Convert the string dueDate to Date for the entity
+      (updateData as any).dueDate = dueDate;
     }
-    
+
     updateData.updatedAt = new Date();
 
     Object.assign(reminder, updateData);
@@ -81,7 +103,9 @@ export class RemindersService {
     }
 
     if (reminder.plant.createdById !== userId) {
-      throw new ForbiddenException('You do not have permission to delete this reminder');
+      throw new ForbiddenException(
+        'You do not have permission to delete this reminder',
+      );
     }
 
     await this.remindersRepository.remove(reminder);
@@ -99,7 +123,9 @@ export class RemindersService {
     }
 
     if (reminder.plant.createdById !== userId) {
-      throw new ForbiddenException('You do not have permission to update this reminder');
+      throw new ForbiddenException(
+        'You do not have permission to update this reminder',
+      );
     }
 
     reminder.status = ReminderStatus.COMPLETED;
@@ -109,14 +135,19 @@ export class RemindersService {
     return this.remindersRepository.save(reminder);
   }
 
-  async findRemindersByPlant(plantId: string, userId: string): Promise<Reminder[]> {
+  async findRemindersByPlant(
+    plantId: string,
+    userId: string,
+  ): Promise<Reminder[]> {
     // Verify that the plant belongs to the user
     const plant = await this.pinsRepository.findOne({
       where: { id: plantId, createdById: userId },
     });
 
     if (!plant) {
-      throw new NotFoundException('Plant not found or you do not have permission to access it');
+      throw new NotFoundException(
+        'Plant not found or you do not have permission to access it',
+      );
     }
 
     return this.remindersRepository.find({
@@ -151,9 +182,9 @@ export class RemindersService {
   }
 
   async createQuickReminder(
-    plantId: string, 
-    userId: string, 
-    type: 'weekly' | 'monthly' | 'yearly' | 'photo'
+    plantId: string,
+    userId: string,
+    type: 'weekly' | 'monthly' | 'yearly' | 'photo',
   ): Promise<Reminder> {
     // Verify that the plant belongs to the user
     const plant = await this.pinsRepository.findOne({
@@ -161,11 +192,13 @@ export class RemindersService {
     });
 
     if (!plant) {
-      throw new NotFoundException('Plant not found or you do not have permission to access it');
+      throw new NotFoundException(
+        'Plant not found or you do not have permission to access it',
+      );
     }
 
     const now = new Date();
-    let dueDate = new Date();
+    const dueDate = new Date();
     let title = '';
     let notificationType = NotificationType.WARNING;
     let recurringPattern: RecurringPattern | undefined;
@@ -194,14 +227,14 @@ export class RemindersService {
         break;
     }
 
-         const reminder = this.remindersRepository.create({
-       plantId,
-       title,
-       dueDate,
-       notificationType,
-       recurringPattern,
-       isRecurring: true,
-     });
+    const reminder = this.remindersRepository.create({
+      plantId,
+      title,
+      dueDate,
+      notificationType,
+      recurringPattern,
+      isRecurring: true,
+    });
 
     return this.remindersRepository.save(reminder);
   }

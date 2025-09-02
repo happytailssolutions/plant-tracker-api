@@ -12,9 +12,8 @@ export class PinsResolver {
 
   @Query(() => [Pin])
   @UseGuards(GqlAuthGuard)
-  async allPins(
-    @CurrentUser() user: any,
-  ): Promise<Pin[]> {
+  async allPins(@CurrentUser() user: any): Promise<Pin[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.pinsService.findAllPins(user.id);
   }
 
@@ -24,6 +23,7 @@ export class PinsResolver {
     @Args('mapBounds') mapBounds: MapBoundsInput,
     @CurrentUser() user: any,
   ): Promise<Pin[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.pinsService.findPinsInBounds(mapBounds, user.id);
   }
 
@@ -33,6 +33,7 @@ export class PinsResolver {
     @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: any,
   ): Promise<Pin> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.pinsService.findPinById(id, user.id);
   }
 
@@ -42,6 +43,7 @@ export class PinsResolver {
     @Args('projectId', { type: () => ID }) projectId: string,
     @CurrentUser() user: any,
   ): Promise<Pin[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.pinsService.findPinsByProject(projectId, user.id);
   }
 
@@ -51,6 +53,7 @@ export class PinsResolver {
     @Args('input') createPinInput: CreatePinInput,
     @CurrentUser() user: any,
   ): Promise<Pin> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.pinsService.createPin(createPinInput, user.id);
   }
 
@@ -60,6 +63,7 @@ export class PinsResolver {
     @Args('input') updatePinInput: UpdatePinInput,
     @CurrentUser() user: any,
   ): Promise<Pin> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.pinsService.updatePin(updatePinInput, user.id);
   }
 
@@ -69,6 +73,7 @@ export class PinsResolver {
     @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: any,
   ): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.pinsService.deletePin(id, user.id);
   }
-} 
+}

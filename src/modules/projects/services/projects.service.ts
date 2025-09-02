@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Project } from '../entities/project.entity';
@@ -29,7 +33,7 @@ export class ProjectsService {
     });
 
     // Filter out any null projects
-    const projects = projectUsers.map(pu => pu.project).filter(Boolean) as Project[];
+    const projects = projectUsers.map((pu) => pu.project).filter(Boolean);
 
     // Calculate pins count for each project
     for (const project of projects) {
@@ -56,14 +60,21 @@ export class ProjectsService {
     return projectUser.project;
   }
 
-  async createProject(createProjectInput: CreateProjectInput, userId: string): Promise<Project> {
+  async createProject(
+    createProjectInput: CreateProjectInput,
+    userId: string,
+  ): Promise<Project> {
     // Create the project
     const project = new Project();
     Object.assign(project, {
       ...createProjectInput,
       ownerId: userId,
-      startDate: createProjectInput.startDate ? new Date(createProjectInput.startDate) : null,
-      endDate: createProjectInput.endDate ? new Date(createProjectInput.endDate) : null,
+      startDate: createProjectInput.startDate
+        ? new Date(createProjectInput.startDate)
+        : null,
+      endDate: createProjectInput.endDate
+        ? new Date(createProjectInput.endDate)
+        : null,
     });
 
     const savedProject = await this.projectsRepository.save(project);
@@ -77,13 +88,16 @@ export class ProjectsService {
     });
 
     // Add additional members if specified
-    if (createProjectInput.memberIds && createProjectInput.memberIds.length > 0) {
+    if (
+      createProjectInput.memberIds &&
+      createProjectInput.memberIds.length > 0
+    ) {
       const memberUsers = await this.usersRepository.find({
         where: { id: In(createProjectInput.memberIds) },
       });
 
       if (memberUsers.length > 0) {
-        const projectUsers = memberUsers.map(user => ({
+        const projectUsers = memberUsers.map((user) => ({
           projectId: savedProject.id,
           userId: user.id,
           role: 'member',
@@ -99,15 +113,18 @@ export class ProjectsService {
       where: { id: savedProject.id },
       relations: ['owner', 'members'],
     });
-    
+
     if (!result) {
       throw new NotFoundException('Failed to create project');
     }
-    
+
     return result;
   }
 
-  async updateProject(updateProjectInput: UpdateProjectInput, userId: string): Promise<Project> {
+  async updateProject(
+    updateProjectInput: UpdateProjectInput,
+    userId: string,
+  ): Promise<Project> {
     const { id, ...updateData } = updateProjectInput;
 
     // Check if user has access to this project (owner or member with edit permissions)
@@ -122,13 +139,17 @@ export class ProjectsService {
 
     // Only owners can update project details
     if (projectUser.role !== 'owner') {
-      throw new ForbiddenException('Only project owners can update project details');
+      throw new ForbiddenException(
+        'Only project owners can update project details',
+      );
     }
 
     // Update the project
     await this.projectsRepository.update(id, {
       ...updateData,
-      startDate: updateData.startDate ? new Date(updateData.startDate) : undefined,
+      startDate: updateData.startDate
+        ? new Date(updateData.startDate)
+        : undefined,
       endDate: updateData.endDate ? new Date(updateData.endDate) : undefined,
     });
 
@@ -137,11 +158,11 @@ export class ProjectsService {
       where: { id },
       relations: ['owner', 'members'],
     });
-    
+
     if (!result) {
       throw new NotFoundException('Project not found after update');
     }
-    
+
     return result;
   }
 
@@ -166,7 +187,11 @@ export class ProjectsService {
     return true;
   }
 
-  async addProjectMember(projectId: string, memberId: string, userId: string): Promise<Project> {
+  async addProjectMember(
+    projectId: string,
+    memberId: string,
+    userId: string,
+  ): Promise<Project> {
     // Check if user has permission to add members (owner only)
     const projectUser = await this.projectUsersRepository.findOne({
       where: { projectId, userId, isActive: true },
@@ -198,15 +223,19 @@ export class ProjectsService {
       where: { id: projectId },
       relations: ['owner', 'members'],
     });
-    
+
     if (!result) {
       throw new NotFoundException('Project not found');
     }
-    
+
     return result;
   }
 
-  async removeProjectMember(projectId: string, memberId: string, userId: string): Promise<Project> {
+  async removeProjectMember(
+    projectId: string,
+    memberId: string,
+    userId: string,
+  ): Promise<Project> {
     // Check if user has permission to remove members (owner only)
     const projectUser = await this.projectUsersRepository.findOne({
       where: { projectId, userId, isActive: true },
@@ -232,7 +261,7 @@ export class ProjectsService {
     // Remove the member (soft delete)
     await this.projectUsersRepository.update(
       { projectId, userId: memberId },
-      { isActive: false }
+      { isActive: false },
     );
 
     // Return the updated project
@@ -240,15 +269,18 @@ export class ProjectsService {
       where: { id: projectId },
       relations: ['owner', 'members'],
     });
-    
+
     if (!result) {
       throw new NotFoundException('Project not found');
     }
-    
+
     return result;
   }
 
-  async checkProjectAccess(projectId: string, userId: string): Promise<boolean> {
+  async checkProjectAccess(
+    projectId: string,
+    userId: string,
+  ): Promise<boolean> {
     const projectUser = await this.projectUsersRepository.findOne({
       where: { projectId, userId, isActive: true },
     });
@@ -256,11 +288,14 @@ export class ProjectsService {
     return !!projectUser;
   }
 
-  async checkProjectOwnership(projectId: string, userId: string): Promise<boolean> {
+  async checkProjectOwnership(
+    projectId: string,
+    userId: string,
+  ): Promise<boolean> {
     const projectUser = await this.projectUsersRepository.findOne({
       where: { projectId, userId, isActive: true },
     });
 
     return projectUser?.role === 'owner';
   }
-} 
+}

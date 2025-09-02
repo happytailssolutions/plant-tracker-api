@@ -15,6 +15,7 @@ export class ProjectsResolver {
   @UseGuards(GqlAuthGuard)
   async myProjects(@CurrentUser() user: any): Promise<Project[]> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       return await this.projectsService.findMyProjects(user.id);
     } catch (error) {
       console.error('Error in myProjects resolver:', error);
@@ -24,7 +25,11 @@ export class ProjectsResolver {
 
   @Query(() => Project)
   @UseGuards(GqlAuthGuard)
-  async project(@Args('id', { type: () => ID }) id: string, @CurrentUser() user: any): Promise<Project> {
+  async project(
+    @Args('id', { type: () => ID }) id: string,
+    @CurrentUser() user: any,
+  ): Promise<Project> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.projectsService.findProjectById(id, user.id);
   }
 
@@ -34,6 +39,7 @@ export class ProjectsResolver {
     @Args('input') createProjectInput: CreateProjectInput,
     @CurrentUser() user: any,
   ): Promise<Project> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.projectsService.createProject(createProjectInput, user.id);
   }
 
@@ -43,6 +49,7 @@ export class ProjectsResolver {
     @Args('input') updateProjectInput: UpdateProjectInput,
     @CurrentUser() user: any,
   ): Promise<Project> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.projectsService.updateProject(updateProjectInput, user.id);
   }
 
@@ -52,6 +59,7 @@ export class ProjectsResolver {
     @Args('id', { type: () => ID }) id: string,
     @CurrentUser() user: any,
   ): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.projectsService.deleteProject(id, user.id);
   }
 
@@ -62,6 +70,7 @@ export class ProjectsResolver {
     @Args('memberId', { type: () => ID }) memberId: string,
     @CurrentUser() user: any,
   ): Promise<Project> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.projectsService.addProjectMember(projectId, memberId, user.id);
   }
 
@@ -72,6 +81,10 @@ export class ProjectsResolver {
     @Args('memberId', { type: () => ID }) memberId: string,
     @CurrentUser() user: any,
   ): Promise<Project> {
-    return this.projectsService.removeProjectMember(projectId, memberId, user.id);
+    return this.projectsService.removeProjectMember(
+      projectId,
+      memberId,
+      user.id,
+    );
   }
-} 
+}

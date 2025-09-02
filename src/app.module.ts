@@ -10,11 +10,6 @@ import { UsersModule } from './modules/users/users.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { PinsModule } from './modules/pins/pins.module';
 import { AuthModule } from './auth/auth.module';
-import { Pin } from './modules/pins/entities/pin.entity';
-import { Reminder } from './modules/pins/entities/reminder.entity';
-import { User } from './modules/users/entities/user.entity';
-import { Project } from './modules/projects/entities/project.entity';
-import { ProjectUser } from './modules/projects/entities/project-user.entity';
 
 @Module({
   imports: [
